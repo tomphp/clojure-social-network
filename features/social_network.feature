@@ -25,13 +25,24 @@ Feature: Social network
       | good day     |
       | good morning |
 
+  Scenario: Charlie follows Alice and Bob
+    Given I am using the network as user Charlie
+    And I am following Alice
+    And I am following Bob
+    When Alice posts a message "Today is great"
+    And Bob posts a message "Worst day ever"
+    Then the most recent messages in my aggregated feed should be:
+      | author | message        |
+      | Bob    | Worst day ever |
+      | Alice  | Today is great |
+
   Scenario: Bob mentions Charlie
     Given I am using the network as user Bob
     When I post a message "hi @Charlie"
     Then my most recent message should mention Charlie
 
   Scenario: Alice posts a message containing a link
-    Given I am using the nework as Alice
+    Given I am using the network as user Alice
     When I post a message "Searching with http://www.google.com"
     Then my most recent message should link to "http://www.google.com"
 
