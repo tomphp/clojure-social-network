@@ -13,9 +13,7 @@
 (defn- post-message [user message]
   (swap! messages #(conj % (message/make user message))))
 
-(defn- my-timeline [] @messages)
-
-(defn- timeline-for-user [user] @messages)
+(defn- timeline-for-user [user] (filter #(= user (:author %)) @messages))
 
 (defn- my-feed [] @messages)
 
@@ -23,7 +21,7 @@
 
 (defn use-as-user [user]
   {:post-message (partial post-message user)
-   :my-timeline my-timeline
+   :my-timeline (partial timeline-for-user user)
    :timeline-for-user timeline-for-user
    :my-feed my-feed
    :follow follow})

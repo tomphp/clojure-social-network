@@ -28,6 +28,9 @@
 (Given #"^([^ ]*) posted a message \"([^\"]*)\"$" [user message]
   (post-message-as-user user message))
 
+(Given #"^([^ ]*) posts a message after$" [user]
+  (post-message-as-user user "random message")) 
+
 (Given #"^I am following ([^ ]*)" [user]
     ((:follow @instance) user))
 
@@ -37,7 +40,7 @@
 (When #"^([^ ]*) posts a message \"([^\"]*)\"$" [user message]
   (post-message-as-user user message))
 
-(Then #"^\"([^\"]*)\" should be in my timeline$" [message]
+(Then #"^the most recent message in my timeline should be \"([^\"]*)\"$" [message]
   (let [retrieve-timeline (:my-timeline @instance)
         found-message (take 1 (retrieve-timeline))]
     (assert-equals message (:message (first found-message)))))
@@ -67,5 +70,7 @@
     (assert-equals (seq expected-messages) (seq actual-messages))))
 
 (Then #"^my most recent message should link to \"([^\"]*)\"$"  [link]
-        (comment  Express the Regexp above with the code you wish you had  )
-          (throw  (cucumber.runtime.PendingException.)))
+  (let [my-timeline (:my-timeline @instance)
+        message (first (my-timeline))
+        links (:links message)]
+    (assert-equals true (contains? links link))))

@@ -13,12 +13,14 @@ Feature: Social network
   Scenario: Alice can post messages to her personal timeline
     Given I am using the network as user Alice
     When I post a message "Looking forward to breakfast"
-    Then "Looking forward to breakfast" should be in my timeline
+    And Bob posts a message after
+    Then the most recent message in my timeline should be "Looking forward to breakfast"
 
   # Test is only Alice's timeline
   Scenario: Bob can view Alice's timeline
     Given Alice posted a message "good morning"
     And Alice posted a message "good day"
+    And Charlie posts a message after
     And I am using the network as user Bob
     Then the most recent messages on Alice's timeline should be:
       | message      |
@@ -31,6 +33,7 @@ Feature: Social network
     And I am following Bob
     When Alice posts a message "Today is great"
     And Bob posts a message "Worst day ever"
+    And Mallory posts a message after
     Then the most recent messages in my aggregated feed should be:
       | author | message        |
       | Bob    | Worst day ever |
