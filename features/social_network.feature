@@ -9,14 +9,12 @@ Feature: Social network
     And I add user with name Charlie to the network
     And I add user with name Mallory to the network
 
-  # Test is only alices timeline
   Scenario: Alice can post messages to her personal timeline
     Given I am using the network as user Alice
     When I post a message "Looking forward to breakfast"
     And Bob posts a message after
     Then the most recent message in my timeline should be "Looking forward to breakfast"
 
-  # Test is only Alice's timeline
   Scenario: Bob can view Alice's timeline
     Given Alice posted a message "good morning"
     And Alice posted a message "good day"
@@ -49,7 +47,7 @@ Feature: Social network
     When I post a message "Searching with http://www.google.com"
     Then my most recent message should link to "http://www.google.com"
 
-# Scenario: Mallory sends a private message to Alice
-#   Given I am using the network as user Alice
-#   When Mallory sends a private message to me saying "Hi Alice"
-#   Then I should have a message from Mallory saying "Hi Alice"
+  Scenario: Mallory sends a private message to Alice
+    Given I am using the network as user Alice
+    When Mallory sends a private message to Alice saying "Hi Alice"
+    Then I should have a message from Mallory saying "Hi Alice"

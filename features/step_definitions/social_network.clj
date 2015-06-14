@@ -16,6 +16,11 @@
         post-message (:post-message user-instance)]
     (post-message message)))
 
+(defn- send-private-message [from to message]
+  (let [user-instance (network/use-as-user from)
+        send-private-message (:send-private-message user-instance)]
+    (send-private-message to message)))
+
 (Before []
   (reset! instance nil))
 
@@ -39,6 +44,9 @@
 
 (When #"^([^ ]*) posts a message \"([^\"]*)\"$" [user message]
   (post-message-as-user user message))
+
+(When #"^([^ ]*) sends a private message to ([^ ]*) saying \"([^\"]*)\"$"  [from to message]
+  (send-private-message from to message))
 
 (Then #"^the most recent message in my timeline should be \"([^\"]*)\"$" [message]
   (let [retrieve-timeline (:my-timeline @instance)
@@ -74,3 +82,11 @@
         message (first (my-timeline))
         links (:links message)]
     (assert-equals true (contains? links link))))
+
+(Then #"^I should have a message from ([^ ]*) saying \"([^\"]*)\"$"  [user message]
+  (let [private-messages (:private-messages @instance)
+        the-message (first (private-messages))]
+    (assert-equals user (:author the-message))
+    (assert-equals message (:message the-message)))
+      )
+

@@ -14,4 +14,10 @@
 
   (it "detects a link"
     (let [message (message/make "user1" "checkout http://github.com")]
-      (should (contains? (:links message) "http://github.com"))))) 
+      (should (contains? (:links message) "http://github.com"))))
+
+  (it "creates a private message"
+    (let [message (Message. "author" "test message" #{} #{})
+          private-message (assoc message :recipient "recipent")]
+    (should (= private-message
+               (message/make-private "author", "recipent" "test message")))))) 

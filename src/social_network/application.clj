@@ -12,7 +12,7 @@
 
 (defn add-user [user] (swap! users #(assoc % (:name user) user)))
 
-(defn- get-public-messages [] @messages)
+(defn- get-public-messages [] (filter #((comp not contains?) % :recipient) @messages))
 
 (defn- post-message [user message]
   (swap! messages #(conj % (message/make user message))))
@@ -32,9 +32,17 @@
                    active-user-name
                    (user/follow-user active-user user-to-follow)))))
 
+(defn- send-private-message [from to message]
+  (swap! messages #(conj % (message/make-private from to message))))
+
+(defn- private-messages [recipient]
+  (filter #(= (:recipient %) recipient) @messages))
+
 (defn use-as-user [user]
   {:post-message (partial post-message user)
    :my-timeline (partial timeline-for-user user)
    :timeline-for-user timeline-for-user
    :my-feed (partial my-feed user)
-   :follow (partial follow user)})
+   :follow (partial follow user)
+   :send-private-message (partial send-private-message user)
+   :private-messages (partial private-messages user)})
