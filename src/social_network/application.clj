@@ -12,7 +12,7 @@
 
 (defn add-user [user] (swap! users #(assoc % (:name user) user)))
 
-(defn- get-public-messages [] (filter #((comp not contains?) % :recipient) @messages))
+(defn- get-public-messages [] (filter message/is-public @messages))
 
 (defn- post-message [user message]
   (swap! messages #(conj % (message/make user message))))

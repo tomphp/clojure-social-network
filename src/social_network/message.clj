@@ -11,3 +11,5 @@
 
 (defn make-private [from to message]
   (assoc (make from message) :recipient to))
+
+(defn is-public [message] ((comp not contains?) message :recipient))
