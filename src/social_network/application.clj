@@ -7,12 +7,11 @@
 (def ^:private messages (atom empty-message-list))
 (def ^:private users (atom {}))
 
-(defn reset []
-  (reset! messages empty-message-list))
+(defn reset [] (reset! messages empty-message-list))
 
 (defn add-user [user] (swap! users #(assoc % (:name user) user)))
 
-(defn- get-public-messages [] (filter message/is-public @messages))
+(defn- get-public-messages [] (filter message/public? @messages))
 
 (defn- post-message [user message]
   (swap! messages #(conj % (message/make user message))))

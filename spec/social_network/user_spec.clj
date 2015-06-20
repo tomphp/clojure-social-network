@@ -1,13 +1,15 @@
 (ns social-network.user-spec
   (:require [speclj.core :refer :all]
-            [social-network.user :as user]))
+            [social-network.user :refer :all]))
 
 (describe "user"
-  (it "makes a user from the name",
-    (should (= {:name "tom", :follows #{}}
-               (user/make-from-name "tom"))))
+  (context "make-from-name"
+    (it "makes a user from the name",
+      (should= {:name "tom", :follows #{}}
+               (make-from-name "tom"))))
   
-  (it "adds a user to be followed"
-    (let [self (user/make-from-name "tom")]
-      (should (= #{"jenny"}
-                 (:follows (user/follow-user self "jenny")))))))
+  (context "follow-user"
+    (it "adds a user to be followed"
+      (let [self (make-from-name "tom")]
+        (should= #{"jenny"}
+                 (:follows (follow-user self "jenny")))))))
