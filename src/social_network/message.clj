@@ -12,4 +12,14 @@
 (defn make-private [from to message]
   (assoc (make from message) :recipient to))
 
-(defn public? [message] ((comp not contains?) message :recipient))
+(defn public? [message]
+  ((comp not contains?) message :recipient))
+
+(defn authored-by? [author-name message]
+  (= (:author message) author-name))
+
+(defn from-followee? [followees message]
+  (contains? followees (:author message)))
+
+(defn for-recipient? [recipient-name message]
+  (= (:recipient message) recipient-name))
