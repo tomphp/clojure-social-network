@@ -17,9 +17,8 @@
 (defn- timeline-for-user [fetch-messages user]
   (filter #(= user (:author %)) (public-only (fetch-messages))))
 
-(defn- my-feed [user-repository fetch-messages active-user-name]
-  (let [fetch-user-by-name (:fetch-by-name user-repository)
-        active-user (fetch-user-by-name active-user-name)
+(defn- my-feed [fetch-active-user fetch-messages]
+  (let [active-user (fetch-active-user)
         follows (:follows active-user)]
     (filter #(follows (:author %)) (public-only (fetch-messages)))))
 
@@ -32,23 +31,22 @@
         message (message/make-private from to message)]
     (add! message)))
 
-(defn- private-messages [message-store recipient]
-  (let [fetch-all (:fetch-all message-store)
-        messages (fetch-all)
+(defn- private-messages [fetch-messages recipient]
+  (let [messages (fetch-messages)
         recipient-filter #(= (:recipient %) recipient)]
   (filter recipient-filter messages)))
 
 (defn use-as-user [user-repository message-store user-name]
   (let [fetch-messages (:fetch-all message-store)
         fetch-user-by-name (:fetch-by-name user-repository)
-        active-user (fetch-user-by-name user-name)]
+        fetch-active-user (partial fetch-user-by-name user-name)]
     {:post-message (partial post-message message-store user-name)
      :my-timeline (partial timeline-for-user fetch-messages user-name)
      :timeline-for-user (partial timeline-for-user fetch-messages)
-     :my-feed (partial my-feed user-repository fetch-messages user-name)
+     :my-feed (partial my-feed fetch-active-user fetch-messages)
      :follow (partial follow user-repository user-name)
      :send-private-message (partial send-private-message message-store  user-name)
-     :private-messages (partial private-messages message-store user-name)}))
+     :private-messages (partial private-messages fetch-messages user-name)}))
 
 (defn make-instance [user-repository message-store]
   {:add-user (partial add-user user-repository)
