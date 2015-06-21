@@ -2,18 +2,13 @@
          '[social-network.user :as user]
          '[social-network.atom-store :as store]  
          '[social-network.user-repository :as repository]  
-         '[clojure.test :refer :all]) 
+         '[speclj.core :refer :all]) 
 
 (def ^:private message-store (store/make-instance (atom nil)))
 (def ^:private user-repository (repository/make-instance (atom nil)))
 (def ^:private network (application/make-instance user-repository message-store))
 
 (def ^:private instance (atom nil))
-
-(defn- assert-equals [expected actual]
-  (if (not (= expected actual))
-    (let [message (str "Assert equals failed " expected " != " actual)]
-      (throw (Exception. message)))))
 
 (defn- post-message-as-user [user message]
   (let [user-instance ((:use-as-user network) user)
@@ -55,7 +50,7 @@
 (Then #"^the most recent message in my timeline should be \"([^\"]*)\"$" [message]
   (let [retrieve-timeline (:my-timeline @instance)
         found-message (take 1 (retrieve-timeline))]
-    (assert-equals message (:message (first found-message)))))
+    (should= message (:message (first found-message)))))
 
 (Then #"^the most recent messages on ([^\']*)'s timeline should be:$"
   [user messages]
@@ -64,14 +59,14 @@
         number-of-messages (count expected-messages)
         actual-messages (map :message
                              (take number-of-messages (timeline-for-user user)))]
-    (assert-equals (seq expected-messages) (seq actual-messages))))
+    (should= (seq expected-messages) (seq actual-messages))))
 
 (Then #"my most recent message should mention ([^ ]*)$"
   [mentioned-user]
   (let [my-timeline (:my-timeline @instance)
         message (first (my-timeline))
         mentions (:mentions message)]
-    (assert-equals true (contains? mentions mentioned-user))))
+    (should (contains? mentions mentioned-user))))
 
 (Then #"^the most recent messages in my aggregated feed should be:$" [messages]
   (let [my-feed (:my-feed @instance)
@@ -79,16 +74,16 @@
         number-of-messages (count expected-messages)
         actual-messages (map #(select-keys % [:message :author])
                              (take number-of-messages (my-feed)))]
-    (assert-equals (seq expected-messages) (seq actual-messages))))
+    (should= (seq expected-messages) (seq actual-messages))))
 
 (Then #"^my most recent message should link to \"([^\"]*)\"$"  [link]
   (let [my-timeline (:my-timeline @instance)
         message (first (my-timeline))
         links (:links message)]
-    (assert-equals true (contains? links link))))
+    (should (contains? links link))))
 
 (Then #"^I should have a message from ([^ ]*) saying \"([^\"]*)\"$"  [user message]
   (let [private-messages (:private-messages @instance)
         the-message (first (private-messages))]
-    (assert-equals user (:author the-message))
-    (assert-equals message (:message the-message))))
+    (should= user (:author the-message))
+    (should= message (:message the-message))))
