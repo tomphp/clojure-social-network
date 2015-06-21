@@ -1,10 +1,14 @@
-(require '[social-network.application :as network]
+(require '[social-network.application :as application]
          '[social-network.user :as user]
+         '[social-network.atom-store :as store]  
+         '[social-network.user-repository :as repository]  
          '[clojure.test :refer :all]) 
 
-(def instance (atom nil))
+(def ^:private message-store (store/make-instance (atom nil)))
+(def ^:private user-repository (repository/make-instance (atom nil)))
+(def ^:private network (application/make-instance user-repository message-store))
 
-(network/reset)
+(def ^:private instance (atom nil))
 
 (defn- assert-equals [expected actual]
   (if (not (= expected actual))
@@ -12,23 +16,23 @@
       (throw (Exception. message)))))
 
 (defn- post-message-as-user [user message]
-  (let [user-instance (network/use-as-user user)
+  (let [user-instance ((:use-as-user network) user)
         post-message (:post-message user-instance)]
     (post-message message)))
 
 (defn- send-private-message [from to message]
-  (let [user-instance (network/use-as-user from)
+  (let [user-instance ((:use-as-user network) from)
         send-private-message (:send-private-message user-instance)]
     (send-private-message to message)))
 
 (Before []
-  (reset! instance nil))
+  ((:reset! message-store)))
 
 (Given #"^I add user with name ([^ ]*) to the network$" [name]
-  (network/add-user (user/make-from-name name)))
+  ((:add-user network) (user/make-from-name name)))
 
 (Given #"^I am using the network as user ([^ ]*)$" [name]
-  (reset! instance (network/use-as-user name)))
+  (reset! instance ((:use-as-user network) name)))
 
 (Given #"^([^ ]*) posted a message \"([^\"]*)\"$" [user message]
   (post-message-as-user user message))
