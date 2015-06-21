@@ -87,6 +87,4 @@
   (let [private-messages (:private-messages @instance)
         the-message (first (private-messages))]
     (assert-equals user (:author the-message))
-    (assert-equals message (:message the-message)))
-      )
-
+    (assert-equals message (:message the-message))))

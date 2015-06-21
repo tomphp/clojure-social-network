@@ -1,41 +1,53 @@
 (ns social-network.application
   (:require [social-network.message :as message]
+            [social-network.atom-store :as store]  
+            [social-network.user-repository :as repository]  
             [social-network.user :as user]))
 
-(def ^:private empty-message-list '())
+(def ^:private message-store (store/make-instance (atom nil)))
+(def ^:private user-repository (repository/make-instance (atom nil)))
 
-(def ^:private messages (atom empty-message-list))
-(def ^:private users (atom {}))
+(defn reset []
+  (let [reset! (:reset! message-store)]
+    (reset!)))
 
-(defn reset [] (reset! messages empty-message-list))
+(defn add-user [user] 
+  (let [add! (:add! user-repository)]
+    (add! user)))
 
-(defn add-user [user] (swap! users #(assoc % (:name user) user)))
-
-(defn- get-public-messages [] (filter message/public? @messages))
+(defn- get-public-messages [] 
+  (let [fetch-all (:fetch-all message-store)
+        messages (fetch-all)]
+    (filter message/public? messages)))
 
 (defn- post-message [user message]
-  (swap! messages #(conj % (message/make user message))))
+  (let [add! (:add! message-store)
+        message (message/make user message)]
+    (add! message)))
 
 (defn- timeline-for-user [user]
   (filter #(= user (:author %)) (get-public-messages)))
 
 (defn- my-feed [active-user-name]
-  (let [active-user (get @users active-user-name)
+  (let [fetch-user-by-name (:fetch-by-name user-repository)
+        active-user (fetch-user-by-name active-user-name)
         follows (:follows active-user)]
     (filter #(follows (:author %)) (get-public-messages))))
 
 (defn- follow [active-user-name user-to-follow]
-  (swap! users
-         #(let [active-user (get % active-user-name)]
-            (assoc %
-                   active-user-name
-                   (user/follow-user active-user user-to-follow)))))
+  (let [update-user! (:update! user-repository)]
+    (update-user! active-user-name #(user/follow-user % user-to-follow))))
 
 (defn- send-private-message [from to message]
-  (swap! messages #(conj % (message/make-private from to message))))
+  (let [add! (:add! message-store)
+        message (message/make-private from to message)]
+    (add! message)))
 
 (defn- private-messages [recipient]
-  (filter #(= (:recipient %) recipient) @messages))
+  (let [fetch-all (:fetch-all message-store)
+        messages (fetch-all)
+        recipient-filter #(= (:recipient %) recipient)]
+  (filter recipient-filter messages)))
 
 (defn use-as-user [user]
   {:post-message (partial post-message user)
